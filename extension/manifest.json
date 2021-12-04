@@ -1,0 +1,30 @@
+{
+    "name": "sporcle Multiplayer",
+    "description": "Build an Extension!",
+    "version": "1.0",
+    "manifest_version": 3,
+    "background": {
+        "service_worker": "background.js"
+    },
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting"
+    ],
+    "action": {
+        "default_popup": "popup/popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches": [ "https://*.sporcle.com/games/*" ],
+            "css": [ "injected/styles.css" ],
+            "js": [ "injected/bootstrap.js" ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [ "injected/script.js" ],
+            "matches": [ "https://*.sporcle.com/*" ]
+        }
+    ]
+}

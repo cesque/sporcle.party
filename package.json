@@ -1,0 +1,11 @@
+{
+  "name": "sporcle.party",
+  "version": "0.0.1",
+  "main": "server/index.js",
+  "author": "cesque <euqsec@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "ws": "^8.2.3"
+  }
+}
