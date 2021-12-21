@@ -13,7 +13,7 @@ export default class Room {
         this.timeoutReference = null
         this.resetTimeout()
 
-        this.owner.on('message', this.onOwnerMessage)
+        this.owner.on('message', message => this.onOwnerMessage(JSON.parse(message.toString())))
     }
 
     resetTimeout() {
@@ -28,7 +28,7 @@ export default class Room {
             ws: ws,
         }
 
-        client.ws.on('message', data => this.onClientMessage(data, client))
+        client.ws.on('message', data => this.onClientMessage(JSON.parse(data.toString()), client))
     }
 
     broadcast(data) {

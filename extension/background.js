@@ -1,5 +1,7 @@
 let ws = null
 
+let room = {}
+
 let fns = {
     'hello': hello,
     'room info': roomInfo,
@@ -14,24 +16,41 @@ chrome.runtime.onInstalled.addListener(() => {
     console.log('hello world!')
 })
 
-chrome.runtime.onConnect.addListener(port => {
+chrome.runtime.onConnect.addListener(async port => {
     if(port.name == 'sporcle-multiplayer-bootstrap') {
         console.log('connected bootstrap')
         bootstrapPort = port
 
+        let firstMessageBuffer = []
         port.onMessage.addListener(message => {
             console.log(message)
+            
+            if(!ws || ws.readyState != WebSocket.OPEN) {
+                firstMessageBuffer.push(JSON.stringify(message))
+            } else {
+                ws.send(JSON.stringify(message))
+            }
         })
-
+        
         port.onDisconnect.addListener(() => {
             console.log('disconnected bootstrap')
             bootstrapPort = null
         })
 
-        if(ws == null) connect()
+        if(ws == null) {
+            await connect()
+            for(let message of firstMessageBuffer) {
+                ws.send(message)
+            }
+        }
     } else if(port.name == 'sporcle-multiplayer-popup') {
         console.log('connected popup')
         popupPort = port
+
+        popupPort.postMessage({
+            type: 'room info',
+            data: room,
+        })
 
         port.onMessage.addListener(message => {
             console.log(message)
@@ -53,44 +72,55 @@ chrome.runtime.onConnect.addListener(port => {
 })
 
 function connect() {
-    ws = new WebSocket(`ws://localhost:3009`)
+    return new Promise((resolve, reject) => {
+        // let url = `ws://192.168.1.124`
+        // let port = 8080
+        let url = `ws://localhost`
+        let port = 3009
+        console.log(`connecting to ${ url }:${ port }...`)
+        ws = new WebSocket(`${ url }:${ port }`)
 
-    ws.addEventListener('open', event => {
-        if(bootstrapPort) {
+        ws.addEventListener('open', event => {
+            console.log('connected!');
+            if(bootstrapPort) {
+                    bootstrapPort.postMessage({
+                    type: 'log',
+                    source: 'background',
+                    content: `connected to websocket server`,
+                })
+            }
+
+            resolve(ws)
+        })
+
+        ws.addEventListener('close', event => {
+            console.log(`connection closed with server`)
+            ws = null
+            room = {}
+        })
+
+        ws.addEventListener('error', event => {
+            console.log(`connection errored with server`)
+            ws = null
+        })
+
+        ws.addEventListener('message', event => {
+            let data = JSON.parse(event.data)
+
+            if(bootstrapPort) {
                 bootstrapPort.postMessage({
-                type: 'log',
-                source: 'background',
-                content: `connected to websocket server`,
-            })
-        }
-    })
+                    type: 'log',
+                    source: 'server',
+                    content: JSON.stringify(data),
+                })
+            }
 
-    ws.addEventListener('close', event => {
-        console.log(`connection closed with server`)
-        ws = null
-    })
-
-    ws.addEventListener('error', event => {
-        console.log(`connection errored with server`)
-        ws = null
-    })
-
-    ws.addEventListener('message', event => {
-        let data = JSON.parse(event.data)
-
-        if(bootstrapPort) {
-            bootstrapPort.postMessage({
-                type: 'log',
-                source: 'server',
-                content: JSON.stringify(data),
-            })
-        }
-
-        if(fns.hasOwnProperty(data.type)) {
-            fns[data.type](data)
-        } else {
-            log(`unknown message type from server: ${ data.type }`)
-        }
+            if(fns.hasOwnProperty(data.type)) {
+                fns[data.type](data)
+            } else {
+                log(`unknown message type from server: ${ data.type }`)
+            }
+        })
     })
 }
 
@@ -114,10 +144,15 @@ function hello(data) {
 
 function roomInfo(data) {
     console.log(data)
+    room = data.data
     popupPort.postMessage(data)
 }
 
 function roomClosing(data) {
     console.log(data)
-    popupPort.postMessage(data)
+    room = {}
+    popupPort.postMessage({
+        type: 'room info',
+        data: room,
+    })
 }

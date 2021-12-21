@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     port.onMessage.addListener(msg => {
-        console.log("message recieved" + msg)
+        console.log('message recieved' + msg)
     })
 
     document.querySelector('.create-room-button').addEventListener('click', () => {

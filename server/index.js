@@ -13,6 +13,8 @@ wss.on('connection', function connection(ws) {
     ws.on('message', function message(data) {
         let json = JSON.parse(data)
 
+        console.log(json.type)
+
         if(json.type == 'create room') createRoom(ws)
     })
 
@@ -32,7 +34,7 @@ let roomCheckReference = null
 function startRoomCheckLoop() {
     roomCheckReference = setInterval(() => {
         rooms = rooms.filter(room => !room.hasTimedOut)
-        console.log(rooms.length)
+        // console.log(rooms.length)
 
         if(rooms.length == 0) stopRoomCheckLoop()
     }, 1000)

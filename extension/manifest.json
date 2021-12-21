@@ -12,7 +12,7 @@
         "scripting"
     ],
     "action": {
-        "default_popup": "popup/popup.html"
+        "default_popup": "popup/build/index.html"
     },
     "content_scripts": [
         {
