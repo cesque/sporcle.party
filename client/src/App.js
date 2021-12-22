@@ -31,7 +31,7 @@ export default class App extends React.Component {
     onMessage(message) {
         switch(message.type) {
             case 'room info':
-                onRoomInfo(message.data)
+                this.onRoomInfo(message.data)
                 break
             default:
                 console.warn(`unknown message type from server: ${ message.type}`)
