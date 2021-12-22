@@ -23,7 +23,8 @@ export default class App extends React.Component {
         })
     
         this.port.onMessage.addListener(msg => {
-            console.log('message recieved' + msg)
+            console.log(msg)
+            // console.log('message recieved' + msg)
             if(msg.type == 'room info') {
                 this.setState({
                     room: msg.data
@@ -42,7 +43,7 @@ export default class App extends React.Component {
         return <main class={styles.homePage}>
             <h1 class={styles.logo}><span>sporcle</span>.party</h1>
             <button class={styles.createRoomButton} type="button" onClick={ this.createRoom }>Create Room</button>
-            { this.state.room ? <h3>{ this.state.room.room.code }</h3> : null }
+            { (this.state.room && this.state.room.room) ? <h3>{ this.state.room.room.code }</h3> : null }
             <pre>{ JSON.stringify(this.state, null, 4) }</pre>
         </main>
     }
