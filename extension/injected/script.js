@@ -37,12 +37,37 @@ window.unPauseGame = function(arguments) {
     return returnValue
 }
 
+let lastSubmittedData = null
+let oldShowAnswer = showAnswer
+window.showAnswer = function(answerSlot, answer, gameOver) {
+    if(!gameOver) {
+        // answer is being shown because it's right, not
+        // because the game is over and we're showing them all
+        if(lastSubmittedData) {
+            // answer was submitted by a player over the network
+            // not entered by local player (this is set below)
 
+            // send back an answer response so server (and
+            // eventually player) can know the got the
+            // answer correct
+            sendEvent('answer-response', { result: true, ...lastSubmittedData })
+        }
+    }
 
-
+    oldShowAnswer(answerSlot, answer, gameOver)
+}
 
 /* --- send info about current quiz --- */
-sendEvent('quiz-info', Sporcle.gameData)
+let gameMetaElement = document.querySelector('#gameMeta h2')
+let gameMeta = gameMetaElement ? gameMetaElement.textContent : null
+
+let gameData = {
+    name: Sporcle.gameData.name,
+    gameID: Sporcle.gameData.gameID,
+    meta: gameMeta,
+}
+
+sendEvent('quiz-info', gameData)
 
 
 function sendEvent(eventName, data) {
@@ -59,8 +84,22 @@ document.addEventListener('sporcle-multiplayer:submit-answer', event => {
 
     let textInput = document.querySelector('#gameinput')
 
+    // cache the current value
     let prevTextValue = textInput.value
+
+    // update text input with answer from client
     textInput.value = message.answer
+    // save message info so we can refer to it
+    // in message back to server if the answer
+    // is correct
+    lastSubmittedPlayerId = message
+
+    // submit the answer
     window.checkGameInput(textInput)
+
+    // reset the player data
+    lastSubmittedPlayerId = null
+    // restore text input from cache
+    // so local player can keep typing
     textInput.value = prevTextValue
 })

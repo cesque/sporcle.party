@@ -1,25 +1,38 @@
-import logo from './logo.svg';
-import './App.scss';
+import React from 'react'
+import styles from './App.scss'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends React.Component {
+    constructor(props) {
+        super(props)
+
+        console.log('a')
+
+        this.port = null
+
+        this.createRoom = this.createRoom.bind(this)
+    }
+
+    componentDidMount() {
+        console.log(window.chrome)
+        this.port = window.chrome.runtime.connect({
+            name: 'sporcle-multiplayer-popup'
+        })
+    
+        this.port.onMessage.addListener(msg => {
+            console.log('message recieved' + msg)
+        })
+    }
+
+    createRoom() {
+        this.port.postMessage({
+            type: 'create room'
+        })
+    }
+
+    render() {
+        return <main class={styles.homePage}>
+            <h1 class={styles.logo}><span>sporcle</span>.party</h1>
+            <button class={styles.createRoomButton} type="button" onClick={ this.createRoom }>Create Room</button>
+        </main>
+    }
 }
-
-export default App;

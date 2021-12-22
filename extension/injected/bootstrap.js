@@ -18,16 +18,6 @@ document.documentElement.appendChild(s)
             case 'submit answer': submitAnswer(msg); break
             default: console.warn(`unknown message type '${ msg.type }'`); console.warn(msg); break
         }
-
-        // let event = new CustomEvent('sporcle-multiplayer:submit-answer', { 
-        //     detail: {
-        //         data: 'some data',
-        //         id: msg.id,
-        //         answer: msg.id % 2 == 0 ? 'T' : 'F',
-        //     }
-        // })
-
-        // document.dispatchEvent(event)
     })
 
     function passDataToBackground(event) {
@@ -71,5 +61,13 @@ function log(message) {
 }
 
 function submitAnswer(message) {
+    let event = new CustomEvent('sporcle-multiplayer:submit-answer', { 
+        detail: {
+            data: 'some data',
+            player: message.player,
+            answer: message.answer
+        }
+    })
 
+    document.dispatchEvent(event)
 }
