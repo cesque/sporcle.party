@@ -9,12 +9,14 @@ let messageTypes = {
     'sporcle-multiplayer:quiz-end': 'quiz end',
     'sporcle-multiplayer:quiz-pause': 'quiz pause',
     'sporcle-multiplayer:quiz-unpause': 'quiz unpause',
+    'sporcle-multiplayer:answer-response': 'answer response',
 }
 
 let fns = {
     'room info': roomInfo,
     'room created': roomCreated,
     'room closing': roomClosing,
+    'submit answer': submitAnswer,
 }
 
 let bootstrapPort = null
@@ -35,6 +37,7 @@ chrome.runtime.onConnect.addListener(async port => {
     let firstMessageBuffer = []
 
     function sendOrBuffer(message) {
+        delete message.typePrevious
         // if websocket isn't ready to send stuff on,
         // just buffer it until the websocket is
         // fully ready
@@ -91,7 +94,6 @@ chrome.runtime.onConnect.addListener(async port => {
                 type: 'quiz info',
                 data: quizInfo
             }))
-
         })
     } else if(port.name == 'sporcle-multiplayer-popup') {
         // code that runs when popup connects (every time
@@ -259,5 +261,13 @@ function roomClosing(data) {
             type: 'room info',
             data: room,
         })
+    }
+}
+
+function submitAnswer(data) {
+    console.log(data)
+
+    if(bootstrapPort) {
+        bootstrapPort.postMessage(data)
     }
 }

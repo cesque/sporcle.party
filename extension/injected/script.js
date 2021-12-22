@@ -40,6 +40,7 @@ window.unPauseGame = function(arguments) {
 let lastSubmittedData = null
 let oldShowAnswer = showAnswer
 window.showAnswer = function(answerSlot, answer, gameOver) {
+    console.log(gameOver, lastSubmittedData);
     if(!gameOver) {
         // answer is being shown because it's right, not
         // because the game is over and we're showing them all
@@ -50,7 +51,9 @@ window.showAnswer = function(answerSlot, answer, gameOver) {
             // send back an answer response so server (and
             // eventually player) can know the got the
             // answer correct
-            sendEvent('answer-response', { result: true, ...lastSubmittedData })
+
+            let data = { response: 'correct', ...lastSubmittedData }
+            sendEvent('answer-response', data)
         }
     }
 
@@ -75,6 +78,7 @@ function sendEvent(eventName, data) {
         detail: data
     })
 
+    console.log(event)
     document.dispatchEvent(event)
 }
 
@@ -92,13 +96,13 @@ document.addEventListener('sporcle-multiplayer:submit-answer', event => {
     // save message info so we can refer to it
     // in message back to server if the answer
     // is correct
-    lastSubmittedPlayerId = message
+    lastSubmittedData = message
 
     // submit the answer
     window.checkGameInput(textInput)
 
     // reset the player data
-    lastSubmittedPlayerId = null
+    lastSubmittedData = null
     // restore text input from cache
     // so local player can keep typing
     textInput.value = prevTextValue

@@ -37,6 +37,7 @@ document.documentElement.appendChild(s)
         'sporcle-multiplayer:quiz-end',
         'sporcle-multiplayer:quiz-pause',
         'sporcle-multiplayer:quiz-unpause',
+        'sporcle-multiplayer:answer-response',
     ]
 
     for(let event of events) {
@@ -63,9 +64,8 @@ function log(message) {
 function submitAnswer(message) {
     let event = new CustomEvent('sporcle-multiplayer:submit-answer', { 
         detail: {
-            data: 'some data',
             player: message.player,
-            answer: message.answer
+            answer: message.data
         }
     })
 
